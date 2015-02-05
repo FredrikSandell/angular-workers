@@ -1,0 +1,17 @@
+{
+  "author": "Fredrik Sandell",
+  "name": "angular-workers",
+  "description": "Web workers wrapper for angular",
+  "version": "0.1.1",
+  "homepage": "http://github.com/FredrikSandell/angular-workers",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/FredrikSandell/angular-workers"
+  },
+  "dependencies": {
+    "angular": "~1.3.11"
+  },
+  "devDependencies": {
+    "angular-mocks": "~1.3.11"
+  }
+}
