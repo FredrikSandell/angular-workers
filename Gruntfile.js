@@ -37,13 +37,13 @@ module.exports = function (grunt) {
     concat: {
       src: {
         src: ['src/**/*.js'],
-        dest: 'dist/angular-component-<%= pkg.version %>.js'
+        dest: 'dist/angular-workers-<%= pkg.version %>.js'
       }
     },
     uglify: {
       src: {
         files: {
-          'dist/angular-component-<%= pkg.version %>.min.js': '<%= concat.src.dest %>'
+          'dist/angular-workers-<%= pkg.version %>.min.js': '<%= concat.src.dest %>'
         }
       }
     },
