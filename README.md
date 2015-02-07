@@ -2,15 +2,16 @@
 
 > A wrapper for web workers in angular
 
-##Why?
+###Why?
 Using web workers is somewhat awkward in raw Javascript. Doing it in angular applications even more so. 
 Each web worker runs in it's own context, and this context is isolated from the angular application.
 
-##What does angular-workers do
+###What does angular-workers do
 angular-workers provides an angular service which upon request creates a web worker.
 The returned web worker runs it's own angular context which allows it to resolve angular dependencies.
 
 ##How to use
+
 1. Depend on the WorkerService.
 2. Specify the URL to the file containing the angular script by invoking: 
 <pre><code>
@@ -61,9 +62,9 @@ The browser running the angular service needs to support the following:
 ##Limitations
 The angular-workers is a wrapper around standard web workers. So all limitations with web workers apply.  
   * Data sent between the worker and main thread is deep cloned. (angular-workers does not use transferable objects, yet)
-This means transferring large object (about >20Mb, [Communicating Large Objects with Web Workers in javascript, Samuel Mendenhall](http://developerblog.redhat.com/2014/05/20/communicating-large-objects-with-web-workers-in-javascript/))
-will cause noticeable delays. Samuel Mendenhall recommends sending the data in chunks. This can be achieved using the notify
-in the angular promise.  
+  This means transferring large object (about >20Mb, [Communicating Large Objects with Web Workers in javascript, Samuel Mendenhall](http://developerblog.redhat.com/2014/05/20/communicating-large-objects-with-web-workers-in-javascript/))
+  will cause noticeable delays. Samuel Mendenhall recommends sending the data in chunks. This can be achieved using the notify
+  in the angular promise.  
   * There is no DOM in the worker. Other things are missing as well. No global "document" object. The bare minimum of these
   have been mocked to allow angular to start in the worker.
   * The web worker share no runtime data with the main thread. This is great since it prevents deadlock, starvation and many
