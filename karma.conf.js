@@ -57,7 +57,7 @@ module.exports = function(config) {
     // - Safari (only Mac)
     // - PhantomJS <- does not work, the browser needs web worker support and support for URL blobs.
     // - IE (only Windows)
-    browsers: ['Chrome'],
+    browsers: ['Chrome', 'Firefox'],
 
 
     // If browser does not capture in given timeout [ms], kill it
