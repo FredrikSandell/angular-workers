@@ -10,6 +10,10 @@ describe('FredrikSandell.worker-pool', function () {
             rootScope = $rootScope;
         });
     });
+    beforeEach(function() {
+       WorkerService.setAngularUrl('http://localhost:9876/base/bower_components/angular/angular.js');
+        
+    });
 
     it('should be an object', function () {
         expect(typeof WorkerService).toBe('object');
@@ -29,6 +33,18 @@ describe('FredrikSandell.worker-pool', function () {
         expect(WorkerService.setAngularUrl).toBeDefined();
         expect(typeof WorkerService.setAngularUrl).toBe('function');
     });
+    
+    function waitUntilCompletedToTriggerPromiseResolve(completed, rootScope) {
+        //must wait before triggering digest loop which resolves of the promises
+        //worker must be given time to initialize
+        var checker = setInterval(function(){
+            if(completed) {
+                clearInterval(checker);
+            } else {
+                rootScope.$apply();
+            }
+        }, 100);
+    }
 
     it('createAngularWorker() should return a valid AngularWorker object', function (done) {
         var completed = false;
@@ -46,16 +62,10 @@ describe('FredrikSandell.worker-pool', function () {
             done();
             completed = true;
         });
-        //must wait before triggering digest loop which resolves of the promises
-        //worker must be given time to initialize
-        var checker = setInterval(function(){
-            if(completed) {
-                clearInterval(checker);
-            } else {
-                rootScope.$apply();
-            }
-        }, 100);
+        waitUntilCompletedToTriggerPromiseResolve(completed, rootScope);
     });
+    
+    
 
     it('should be possible to pass arguments to worker, send updates from workers, and successfully terminate workers', function (done) {
         var completed = false;
@@ -94,15 +104,7 @@ describe('FredrikSandell.worker-pool', function () {
             done();
             completed = true;
         });
-        //must wait before triggering digest loop which resolves of the promises
-        //worker must be given time to initialize
-        var checker = setInterval(function(){
-            if(completed) {
-                clearInterval(checker);
-            } else {
-                rootScope.$apply();
-            }
-        }, 100);
+        waitUntilCompletedToTriggerPromiseResolve(completed, rootScope);
     });
 
     it('should be possible reject promise from worker', function (done) {
@@ -119,15 +121,7 @@ describe('FredrikSandell.worker-pool', function () {
             done();
             completed = true;
         });
-        //must wait before triggering digest loop which resolves of the promises
-        //worker must be given time to initialize
-        var checker = setInterval(function(){
-            if(completed) {
-                clearInterval(checker);
-            } else {
-                rootScope.$apply();
-            }
-        }, 100);
+        waitUntilCompletedToTriggerPromiseResolve(completed, rootScope);
     });
 
     it('should be possible inject angular dependencies in worker', function (done) {
@@ -149,15 +143,7 @@ describe('FredrikSandell.worker-pool', function () {
             done();
             completed = true;
         });
-        //must wait before triggering digest loop which resolves of the promises
-        //worker must be given time to initialize
-        var checker = setInterval(function(){
-            if(completed) {
-                clearInterval(checker);
-            } else {
-                rootScope.$apply();
-            }
-        }, 100);
+        waitUntilCompletedToTriggerPromiseResolve(completed, rootScope);
     });
 
     it('should be possible inject custom dependencies in worker', function (done) {
@@ -183,15 +169,7 @@ describe('FredrikSandell.worker-pool', function () {
             done();
             completed = true;
         });
-        //must wait before triggering digest loop which resolves of the promises
-        //worker must be given time to initialize
-        var checker = setInterval(function(){
-            if(completed) {
-                clearInterval(checker);
-            } else {
-                rootScope.$apply();
-            }
-        }, 100);
+        waitUntilCompletedToTriggerPromiseResolve(completed, rootScope);
     });
 
 });
