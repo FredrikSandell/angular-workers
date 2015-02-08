@@ -10,6 +10,11 @@ Each web worker runs in it's own context, and this context is isolated from the 
 angular-workers provides an angular service which upon request creates a web worker.
 The returned web worker runs it's own angular context which allows it to resolve angular dependencies.
 
+##Installation
+install with bower using:
+<pre><code>
+bower install angular-workers
+</pre></code>
 ##How to use
 
 1. Depend on the WorkerService.
@@ -17,7 +22,7 @@ The returned web worker runs it's own angular context which allows it to resolve
 <pre><code>
 // The URL must be absolute because of the URL blob specification  
 WorkerService.setAngularUrl(url)
-</pre></code>
+<pre><code>
 3. OPTIONALLY: Specify how the web worker is to find any dependencies by invoking: 
 <pre><code>
 // The URL must be absolute because of the URL blob specification  
