@@ -91,7 +91,6 @@ angular.module('FredrikSandell.worker-pool', [])
         //wait for the worker to load resources
         worker.addEventListener('message', function (e) {
             var eventId = e.data.event;
-            console.log(e.data);
             if (eventId === 'initDone') {
                 deferred.resolve(buildAngularWorker(worker));
             } else {
@@ -155,7 +154,6 @@ angular.module('FredrikSandell.worker-pool', [])
             var deferred = $q.defer();
             initializedWorker.addEventListener('message', function (e) {
                 var eventId = e.data.event;
-                //console.log(e.data);
                 if (eventId === 'initDone') {
                     throw 'Received worker initialization in run method. This should already have occurred!';
                 } else if (eventId === 'success') {
