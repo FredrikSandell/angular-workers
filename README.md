@@ -14,57 +14,65 @@ The returned web worker runs it's own angular context which allows it to resolve
 ##Installation
 
 install with bower using:
-<pre><code>
-bower install angular-workers
-</pre></code>
+
+    bower install angular-workers
 
 ##How to use
 
-1. Depend on the WorkerService.
-2. Specify the URL to the file containing the angular script by invoking: 
+* Depend on the WorkerService.
+* Specify the URL to the file containing the angular script by invoking:  
 
-<pre><code>
-// The URL must be absolute because of the URL blob specification  
-WorkerService.setAngularUrl(url)
-<pre><code>
 
-3. OPTIONALLY: Specify how the web worker is to find any dependencies by invoking: 
+    // The URL must be absolute because of the URL blob specification  
+    WorkerService.setAngularUrl(url)
 
-<pre><code>
-// The URL must be absolute because of the URL blob specification  
-WorkerService.addDependency(serviceName, moduleName, url) 
-</pre></code>
 
-4. Create create a promise of an angularWorker by invoking: 
+* OPTIONALLY: Specify how the web worker is to find any dependencies by invoking: 
 
-<pre><code>
+
+    // The URL must be absolute because of the URL blob specification  
+    WorkerService.addDependency(serviceName, moduleName, url) 
+
+
+* Create create a promise of an angularWorker by invoking: 
+
+
     var workerPromise = WorkerService.createAngularWorker(['input', 'output' /*additional optional deps*/,   
-    &nbsp;&nbsp;function(input, output /*additional optional deps*/) {  
-    &nbsp;&nbsp;&nbsp;&nbsp;// This contains the worker body  
-    &nbsp;&nbsp;&nbsp;&nbsp;// The function must be self contained (the function body will be converted to source)  
-    &nbsp;&nbsp;&nbsp;&nbsp;// The input paramter is what will be passed to the worker when it is to be executed, it must be a serializable object  
-    &nbsp;&nbsp;&nbsp;&nbsp;// The output parameter is a promise and is logically what the worker will return to the main thread.  
-    &nbsp;&nbsp;&nbsp;&nbsp;// All communication from the worker to the main thread is performed by resolving, rejecting or notifying the output promise  
-    &nbsp;&nbsp;&nbsp;&nbsp;// We may optionally depend on other angular services. These services can be used just as in the main thread.  
-    &nbsp;&nbsp;}]);
-</code></pre>
+        function(input, output /*additional optional deps*/) {  
+            // This contains the worker body.
+            // The function must be self contained. The function body will be 
+            // converted to source and passed to the worker.  
+            // The input parameter is what will be passed to the worker when
+            // it is executed. It must be a serializable object.
+            // The output parameter is a promise and is what the 
+            // worker will return to the main thread.  
+            // All communication from the worker to the main thread is performed
+            // by resolving, rejecting or notifying the output promise.
+            // We may optionally depend on other angular services. 
+            // These services can be used just as in the main thread. 
+            // But be aware that no state changes in the angular services in the
+            // worker are propagates to the main thread. Workers run in fully isolated
+            // contexts. All communication must be performed through the output parameter.
+      }]);
 
-5. When the workerPromise resolves the worker is initialized with it's own angular context and is ready to use. Like so:
-<pre><code>
+
+* When the workerPromise resolves the worker is initialized with it's own angular context and is ready to use. Like so:
+
+
     workerPromise.then(function success(angularWorker) {  
-    &nbsp;&nbsp;&nbsp;&nbsp;//The input must be serializable  
-    &nbsp;&nbsp;&nbsp;&nbsp;return angularWorker.run(inputObject);    
-    &nbsp;&nbsp;}, function error(reason) {  
-    &nbsp;&nbsp;&nbsp;&nbsp;//for some reason the worker failed to initialize  
-    &nbsp;&nbsp;&nbsp;&nbsp;//not all browsers support the HTML5 tech that is required, see below.  
-    &nbsp;&nbsp;}).then(function success(result) {  
-    &nbsp;&nbsp;&nbsp;&nbsp;//handle result  
-    &nbsp;&nbsp;}, function error(reason) {  
-    &nbsp;&nbsp;&nbsp;&nbsp;//handle error  
-    &nbsp;&nbsp;}, function notify(update) {  
-    &nbsp;&nbsp;&nbsp;&nbsp;//handle update  
-    &nbsp;&nbsp;});  
-</pre></code>
+        //The input must be serializable  
+        return angularWorker.run(inputObject);    
+      }, function error(reason) {  
+        //for some reason the worker failed to initialize  
+        //not all browsers support the HTML5 tech that is required, see below.  
+      }).then(function success(result) {  
+        //handle result  
+      }, function error(reason) {  
+        //handle error  
+      }, function notify(update) {  
+        //handle update  
+      });  
+
 
 The same initialized worker can be used many times with different input.
 
