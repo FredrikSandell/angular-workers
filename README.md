@@ -15,28 +15,30 @@ The returned web worker runs it's own angular context which allows it to resolve
 
 install with bower using:
 
+    ```bash
     bower install angular-workers
+    ```
 
 ##How to use
 
 * Depend on the WorkerService.
 * Specify the URL to the file containing the angular script by invoking:  
 
-
+    ```javascript
     // The URL must be absolute because of the URL blob specification  
     WorkerService.setAngularUrl(url)
-
+    ```
 
 * OPTIONALLY: Specify how the web worker is to find any dependencies by invoking: 
 
-
+    ```javascript
     // The URL must be absolute because of the URL blob specification  
     WorkerService.addDependency(serviceName, moduleName, url) 
-
+    ```
 
 * Create create a promise of an angularWorker by invoking: 
 
-
+    ```javascript
     var workerPromise = WorkerService.createAngularWorker(['input', 'output' /*additional optional deps*/,   
         function(input, output /*additional optional deps*/) {  
             // This contains the worker body.
@@ -54,11 +56,11 @@ install with bower using:
             // worker are propagates to the main thread. Workers run in fully isolated
             // contexts. All communication must be performed through the output parameter.
       }]);
-
+      ```
 
 * When the workerPromise resolves the worker is initialized with it's own angular context and is ready to use. Like so:
 
-
+    ```javascript
     workerPromise.then(function success(angularWorker) {  
         //The input must be serializable  
         return angularWorker.run(inputObject);    
@@ -71,8 +73,8 @@ install with bower using:
         //handle error  
       }, function notify(update) {  
         //handle update  
-      });  
-
+      });
+      ```
 
 The same initialized worker can be used many times with different input.
 
