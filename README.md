@@ -15,9 +15,11 @@ The returned web worker runs it's own angular context which allows it to resolve
 
 install with bower using:
 
-    ```bash
-    bower install angular-workers
-    ```
+
+```javascript
+bower install angular-workers
+```
+
 
 ##How to use
 
