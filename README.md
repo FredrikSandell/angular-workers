@@ -11,6 +11,8 @@ Each web worker runs in it's own context, and this context is isolated from the 
 angular-workers provides an angular service which upon request creates a web worker.
 The returned web worker runs it's own angular context which allows it to resolve angular dependencies.
 
+Mor information about how angular-worker work can be found in this [blog post](http://kindofcode.com/web-workers-in-angular/).
+
 ##Installation
 
 install with bower using:
