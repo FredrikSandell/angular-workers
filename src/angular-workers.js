@@ -77,7 +77,7 @@ angular.module('FredrikSandell.worker-pool', [])
 
         var dependencyMetaData = createDependencyMetaData(extractDependencyList(depFuncList));
 
-        var blobURL = (window.webkitURL ? webkitURL : URL).createObjectURL(new Blob([
+        var blobURL = (window.URL ? URL : webkitURL).createObjectURL(new Blob([
             populateWorkerTemplate(
                 workerFunctionToString(
                     depFuncList[depFuncList.length - 1],

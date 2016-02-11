@@ -2,63 +2,80 @@ angular.module('FredrikSandell.worker-pool', []).service('WorkerService', [
   '$q',
   function ($q) {
     var that = {};
-    //this should be configured from the app in the future
-    var urlToAngular = 'http://localhost:9876/base/bower_components/angular/angular.js';
+    var urlToAngular;
     var serviceToUrlMap = {};
+    /*jshint laxcomma:true */
+    /*jshint quotmark: false */
+    var workerTemplate = [
+        '',
+        'var window = self;',
+        'self.history = {};',
+        'var document = {',
+        '      readyState: \'complete\',',
+        '      cookie: \'\',',
+        '      querySelector: function () {},',
+        '      createElement: function () {',
+        '          return {',
+        '              pathname: \'\',',
+        '              setAttribute: function () {}',
+        '          };',
+        '      }',
+        '};',
+        'importScripts(\'<URL_TO_ANGULAR>\');',
+        '<CUSTOM_DEP_INCLUDES>',
+        'angular = window.angular;',
+        'var workerApp = angular.module(\'WorkerApp\', [<DEP_MODULES>]);',
+        'workerApp.run([\'$q\'<STRING_DEP_NAMES>, function ($q<DEP_NAMES>) {',
+        '  self.addEventListener(\'message\', function(e) {',
+        '    var input = e.data;',
+        '    var output = $q.defer();',
+        '    var promise = output.promise;',
+        '    promise.then(function(success) {',
+        '      self.postMessage({event:\'success\', data : success});',
+        '    }, function(reason) {',
+        '      self.postMessage({event:\'failure\', data : reason});',
+        '    }, function(update) {',
+        '      self.postMessage({event:\'update\', data : update});',
+        '    });',
+        '    <WORKER_FUNCTION>;',
+        '  });',
+        '  self.postMessage({event:\'initDone\'});',
+        '}]);',
+        'angular.bootstrap(null, [\'WorkerApp\']);'
+      ].join('\n');
     that.setAngularUrl = function (urlToAngularJs) {
       urlToAngular = urlToAngularJs;
+      return that;
     };
-    function createAngularWorkerTemplate() {
-      /*jshint laxcomma:true */
-      /*jshint quotmark: false */
-      var workerTemplate = [
-          '',
-          '//try {',
-          'var window = self;',
-          'self.history = {};',
-          'var document = {',
-          '      readyState: \'complete\',',
-          '      cookie: \'\',',
-          '      querySelector: function () {},',
-          '      createElement: function () {',
-          '          return {',
-          '              pathname: \'\',',
-          '              setAttribute: function () {}',
-          '          };',
-          '      }',
-          '};',
-          'importScripts(\'<URL_TO_ANGULAR>\');',
-          '<CUSTOM_DEP_INCLUDES>',
-          'angular = window.angular;',
-          'var workerApp = angular.module(\'WorkerApp\', [<DEP_MODULES>]);',
-          'workerApp.run([\'$q\'<STRING_DEP_NAMES>, function ($q<DEP_NAMES>) {',
-          '  self.addEventListener(\'message\', function(e) {',
-          '    var input = e.data;',
-          '    var output = $q.defer();',
-          '    var promise = output.promise;',
-          '    promise.then(function(success) {',
-          '      self.postMessage({event:\'success\', data : success});',
-          '    }, function(reason) {',
-          '      self.postMessage({event:\'failure\', data : reason});',
-          '    }, function(update) {',
-          '      self.postMessage({event:\'update\', data : update});',
-          '    });',
-          '    <WORKER_FUNCTION>;',
-          '  });',
-          '  self.postMessage({event:\'initDone\'});',
-          '}]);',
-          'angular.bootstrap(null, [\'WorkerApp\']);',
-          '//} catch(e) {self.postMessage(JSON.stringify(e));}'
-        ];
-      return workerTemplate.join('\n');
-    }
-    var workerTemplate = createAngularWorkerTemplate();
     that.addDependency = function (serviceName, moduleName, url) {
       serviceToUrlMap[serviceName] = {
         url: url,
         moduleName: moduleName
       };
       return that;
+    };
+    that.createAngularWorker = function (depFuncList) {
+      //validate the input
+      if (!Array.isArray(depFuncList) || depFuncList.length < 3 || typeof depFuncList[depFuncList.length - 1] !== 'function') {
+        throw 'Input needs to be: [\'input\',\'output\'/*optional additional dependencies*/,\n' + '    function(workerInput, deferredOutput /*optional additional dependencies*/)\n' + '        {/*worker body*/}' + ']';
+      }
+      if (typeof urlToAngular !== 'string') {
+        throw 'The url to angular must be defined before worker creation';
+      }
+      var deferred = $q.defer();
+      var dependencyMetaData = createDependencyMetaData(extractDependencyList(depFuncList));
+      var blobURL = (window.URL ? URL : webkitURL).createObjectURL(new Blob([populateWorkerTemplate(workerFunctionToString(depFuncList[depFuncList.length - 1], dependencyMetaData.workerFuncParamList), dependencyMetaData)], { type: 'application/javascript' }));
+      var worker = new Worker(blobURL);
+      //wait for the worker to load resources
+      worker.addEventListener('message', function (e) {
+        var eventId = e.data.event;
+        if (eventId === 'initDone') {
+          deferred.resolve(buildAngularWorker(worker));
+        } else {
+          deferred.reject(e);
+        }
+      });
+      return deferred.promise;
     };
     function createIncludeStatements(listOfServiceNames) {
       var includeString = '';
@@ -104,7 +121,6 @@ angular.module('FredrikSandell.worker-pool', []).service('WorkerService', [
         var deferred = $q.defer();
         initializedWorker.addEventListener('message', function (e) {
           var eventId = e.data.event;
-          //console.log(e.data);
           if (eventId === 'initDone') {
             throw 'Received worker initialization in run method. This should already have occurred!';
           } else if (eventId === 'success') {
@@ -125,44 +141,12 @@ angular.module('FredrikSandell.worker-pool', []).service('WorkerService', [
       };
       return that;
     };
-    var extractDependencyList = function (depFuncList) {
+    function extractDependencyList(depFuncList) {
       return depFuncList.slice(0, depFuncList.length - 1);
-    };
-    var workerFunctionToString = function (func, paramList) {
+    }
+    function workerFunctionToString(func, paramList) {
       return '(' + func.toString() + ')(' + paramList + ')';
-    };
-    /**
-     * example call:
-     * WorkerService.createAngularWorker(['input', 'output', '$http', function(input, output, $http)
-     * {body of function}]);
-     * Parameters "input" and "output" is required. Not defining them will cause a runtime error.
-     * Declaring services to be injected, as '$http' is above, requires the web worker to be able to resolve them.
-     * '$http' service is a part of the standard angular package which means it will resolve without additional information
-     * since angular source is always loaded in the web worker.
-     * But if a custom service was to be injected the WorkerService would need be be informed on how to resolve the.
-     * @param depFuncList
-     */
-    that.createAngularWorker = function (depFuncList) {
-      //validate the input
-      if (!Array.isArray(depFuncList) || depFuncList.length < 3 || typeof depFuncList[depFuncList.length - 1] !== 'function') {
-        throw 'Input needs to be: [\'workerInput\',\'deferredOutput\'/*optional additional dependencies*/,\n' + '    function(workerInput, deferredOutput /*optional additional dependencies*/)\n' + '        {/*worker body*/}' + ']';
-      }
-      var deferred = $q.defer();
-      var dependencyMetaData = createDependencyMetaData(extractDependencyList(depFuncList));
-      var blobURL = (window.webkitURL ? webkitURL : URL).createObjectURL(new Blob([populateWorkerTemplate(workerFunctionToString(depFuncList[depFuncList.length - 1], dependencyMetaData.workerFuncParamList), dependencyMetaData)], { type: 'application/javascript' }));
-      var worker = new Worker(blobURL);
-      //wait for the worker to load resources
-      worker.addEventListener('message', function (e) {
-        var eventId = e.data.event;
-        console.log(e.data);
-        if (eventId === 'initDone') {
-          deferred.resolve(buildAngularWorker(worker));
-        } else {
-          deferred.reject(e);
-        }
-      });
-      return deferred.promise;
-    };
+    }
     return that;
   }
 ]);
