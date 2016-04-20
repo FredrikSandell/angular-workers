@@ -10,6 +10,7 @@ angular.module('FredrikSandell.worker-pool', []).service('WorkerService', [
         '',
         'var window = self;',
         'self.history = {};',
+        'self.Node = function () {};',
         'var document = {',
         '      readyState: \'complete\',',
         '      cookie: \'\',',
