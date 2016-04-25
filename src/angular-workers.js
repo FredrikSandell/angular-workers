@@ -10,6 +10,7 @@ angular.module('FredrikSandell.worker-pool', [])
         , "var window = self;"
         // Skeleton properties to get Angular to load and bootstrap. \
         , "self.history = {};"
+        , "self.Node = function () {};"
         , "var document = {"
         , "      readyState: 'complete',"
         , "      cookie: '',"
