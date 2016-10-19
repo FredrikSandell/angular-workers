@@ -26,14 +26,14 @@ When **npm** is installed, use it to install the needed npm packages:
 To get the source of this project clone the git repository via:
 
 ````
-$ git clone https://github.com/PascalPrecht/angular-component-seed
+$ git clone https://github.com/FredrikSandell/angular-workers.git
 ````
 
 This will clone the complete source to your local machine. Navigate to the project folder
 and install all needed dendencies via **npm** and **bower**:
 
 ````
-$ npm install
+$ npm install --no-optional
 $ bower install
 ````
 
@@ -64,8 +64,8 @@ source. After running this task, you'll find the following files in a generated
 <code>dist</code> folder:
 
 ````
-dist/angular-<component-name>-x.x.x.js
-dist/angular-<component-name>-x.x.x.min.js
+dist/angular-workers-x.x.x.js
+dist/angular-workers-x.x.x.min.js
 ````
 
 #### <code>grunt watch</code>
@@ -92,7 +92,7 @@ or doesn't pass the tests.
   - This repo uses [Brian's conventional-changelog task](https://github.com/btford/grunt-conventional-changelog) so please make sure your commits follow the [conventions](https://docs.google.com/document/d/1QrDFcIiPjSLDn3EL15IJygNPiHORgU1_OOAqWjiDU5Y/edit)
   - Commit to the forked repository
 - Make a pull request
-  - Make sure you send the PR to the <code>canary</code> branch
+  - Make sure you send the PR to the <code>master</code> branch
   - Travis CI is watching you!
 
 If you follow these instructions, your PR will land pretty safety in the main repo!
