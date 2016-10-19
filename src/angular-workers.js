@@ -2,6 +2,7 @@ angular.module('FredrikSandell.worker-pool', [])
     .service('WorkerService', ['$q', function ($q) {
     var that = {};
     var urlToAngular;
+    var urlToLibraries = [];
     var serviceToUrlMap = {};
     /*jshint laxcomma:true */
     /*jshint quotmark: false */
@@ -47,9 +48,13 @@ angular.module('FredrikSandell.worker-pool', [])
         , "angular.bootstrap(null, ['WorkerApp']);"].join("\n");
 
 
-        that.setAngularUrl = function(urlToAngularJs) {
+    that.setAngularUrl = function(urlToAngularJs) {
         urlToAngular = urlToAngularJs;
         return that;
+    };
+
+    that.addLibrary = function(url) {
+        urlToLibraries.push(url);
     };
 
     that.addDependency = function (serviceName, moduleName, url) {
@@ -104,6 +109,9 @@ angular.module('FredrikSandell.worker-pool', [])
 
     function createIncludeStatements(listOfServiceNames) {
         var includeString = '';
+        angular.forEach(urlToLibraries, function(libraryUrl){
+            includeString += 'importScripts(\'' + libraryUrl + '\');\n';
+        });
         angular.forEach(listOfServiceNames, function (serviceName) {
             if (serviceToUrlMap[serviceName]) {
                 includeString += 'importScripts(\''+serviceToUrlMap[serviceName].url+'\');';
