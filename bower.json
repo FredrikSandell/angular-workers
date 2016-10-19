@@ -2,7 +2,7 @@
     "author": "Fredrik Sandell",
     "name": "angular-workers",
     "description": "Web workers wrapper for angular",
-    "version": "1.0.1",
+    "version": "1.0.4",
     "main": "./dist/angular-workers.js",
     "homepage": "http://github.com/FredrikSandell/angular-workers",
     "repository": {
