@@ -11,7 +11,7 @@ describe('FredrikSandell.worker-pool', function () {
         });
     });
     beforeEach(function() {
-       WorkerService.setAngularUrl('http://localhost:9876/base/bower_components/angular/angular.js');
+       WorkerService.setAngularUrl('https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.7/angular.js');
 
     });
 
