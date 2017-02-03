@@ -66,13 +66,13 @@ angular.module('FredrikSandell.worker-pool', [])
         if (!Array.isArray(depFuncList) ||
             depFuncList.length < 3 ||
             typeof depFuncList[depFuncList.length - 1] !== 'function') {
-            throw 'Input needs to be: [\'input\',\'output\'\/*optional additional dependencies*\/,\n' +
+            throw new Error('Input needs to be: [\'input\',\'output\'\/*optional additional dependencies*\/,\n' +
                 '    function(workerInput, deferredOutput \/*optional additional dependencies*\/)\n' +
                 '        {\/*worker body*\/}' +
-                ']';
+            ']');
         }
         if(typeof urlToAngular !== 'string') {
-            throw 'The url to angular must be defined before worker creation';
+            throw new Error('The url to angular must be defined before worker creation');
         }
         var deferred = $q.defer();
 
@@ -156,7 +156,7 @@ angular.module('FredrikSandell.worker-pool', [])
             initializedWorker.addEventListener('message', function (e) {
                 var eventId = e.data.event;
                 if (eventId === 'initDone') {
-                    throw 'Received worker initialization in run method. This should already have occurred!';
+                    throw new Error('Received worker initialization in run method. This should already have occurred!');
                 } else if (eventId === 'success') {
                     deferred.resolve(e.data.data);
                 } else if (eventId === 'failure') {
