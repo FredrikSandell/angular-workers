@@ -5,6 +5,7 @@ angular.module('FredrikSandell.worker-pool', [])
     var serviceToUrlMap = {};
     var messageIndex = 0;
     var indexToDeferMap = {};
+    var importURLs = [];
     /*jshint laxcomma:true */
     /*jshint quotmark: false */
     var workerTemplate = [""
@@ -62,6 +63,11 @@ angular.module('FredrikSandell.worker-pool', [])
         };
         return that;
     };
+
+    // add explicit URLs for importScripts(). Use-case: angular or/and worker code uses global libraries.
+    that.addImportURL = function (url) {
+        importURLs.push(url);
+    };		
 
     that.createAngularWorker = function (depFuncList) {
         //validate the input
@@ -128,6 +134,9 @@ angular.module('FredrikSandell.worker-pool', [])
 
     function createIncludeStatements(listOfServiceNames) {
         var includeString = '';
+        angular.forEach(importURLs, function (url) {
+            includeString += 'importScripts(\''+url+'\');';
+        });				
         angular.forEach(listOfServiceNames, function (serviceName) {
             if (serviceToUrlMap[serviceName]) {
                 includeString += 'importScripts(\''+serviceToUrlMap[serviceName].url+'\');';
