@@ -98,6 +98,25 @@ angular.module('FredrikSandell.worker-pool', [])
             var eventId = e.data.event;
             if (eventId === 'initDone') {
                 worker.removeEventListener('message', callee, false);
+                //add event listener for each promise
+                worker.addEventListener('message', function (e) {
+                    var eventId = e.data.event;
+                    var messageId = e.data.id;
+                    var deferred = indexToDeferMap[messageId];
+                    if (eventId === 'initDone') {
+                        throw new Error('Received worker initialization in run method. This should already have occurred!');
+                    } else if (eventId === 'success') {
+                        deferred.resolve(e.data.data);
+                        delete indexToDeferMap[messageId];
+                    } else if (eventId === 'failure') {
+                        deferred.reject(e.data.data);
+                        delete indexToDeferMap[messageId];
+                    } else if (eventId === 'update') {
+                        deferred.notify(e.data.data);
+                    } else {
+                        deferred.reject(e);
+                    }
+                });
                 deferred.resolve(buildAngularWorker(worker));
             } else {
                 deferred.reject(e);
@@ -157,24 +176,6 @@ angular.module('FredrikSandell.worker-pool', [])
         var that = {};
         that.worker = initializedWorker;
         that.run = function (input) {
-            initializedWorker.addEventListener('message', function (e) {
-                var eventId = e.data.event;
-                var messageId = e.data.id;
-                var deferred = indexToDeferMap[messageId];
-                if (eventId === 'initDone') {
-                    throw new Error('Received worker initialization in run method. This should already have occurred!');
-                } else if (eventId === 'success') {
-                    deferred.resolve(e.data.data);
-                    delete indexToDeferMap[messageId];
-                } else if (eventId === 'failure') {
-                    deferred.reject(e.data.data);
-                    delete indexToDeferMap[messageId];
-                } else if (eventId === 'update') {
-                    deferred.notify(e.data.data);
-                } else {
-                    deferred.reject(e);
-                }
-            });
             var index = messageIndex++;
             indexToDeferMap[index] = $q.defer();
             var param = {
