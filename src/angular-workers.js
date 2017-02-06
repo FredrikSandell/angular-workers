@@ -94,8 +94,10 @@ angular.module('FredrikSandell.worker-pool', [])
 
         //wait for the worker to load resources
         worker.addEventListener('message', function (e) {
+            var callee = arguments.callee;
             var eventId = e.data.event;
             if (eventId === 'initDone') {
+                worker.removeEventListener('message', callee, false);
                 deferred.resolve(buildAngularWorker(worker));
             } else {
                 deferred.reject(e);
