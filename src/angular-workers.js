@@ -4,6 +4,7 @@ angular.module('FredrikSandell.worker-pool', [])
     var urlToAngular;
     var serviceToUrlMap = {};
     var messageIndex = 0;
+    var indexToDeferMap = {};
     /*jshint laxcomma:true */
     /*jshint quotmark: false */
     var workerTemplate = [""
@@ -31,15 +32,16 @@ angular.module('FredrikSandell.worker-pool', [])
         , "var workerApp = angular.module('WorkerApp', [<DEP_MODULES>]);"
         , "workerApp.run(['$q'<STRING_DEP_NAMES>, function ($q<DEP_NAMES>) {"
         , "  self.addEventListener('message', function(e) {"
-        , "    var input = e.data;"
+        , "    var input = e.data.input;"
         , "    var output = $q.defer();"
+        , "    var id = e.data.id;"
         , "    var promise = output.promise;"
         , "    promise.then(function(success) {"
-        , "      self.postMessage({event:'success', data : success});"
+        , "      self.postMessage({event:'success', id: id, data : success});"
         , "    }, function(reason) {"
-        , "      self.postMessage({event:'failure', data : reason});"
+        , "      self.postMessage({event:'failure', id: id, data : reason});"
         , "    }, function(update) {"
-        , "      self.postMessage({event:'update', data : update});"
+        , "      self.postMessage({event:'update', id: id, data : update});"
         , "    });"
         , "    <WORKER_FUNCTION>;"
         , "  });"
@@ -153,24 +155,32 @@ angular.module('FredrikSandell.worker-pool', [])
         var that = {};
         that.worker = initializedWorker;
         that.run = function (input) {
-            var deferred = $q.defer();
             initializedWorker.addEventListener('message', function (e) {
                 var eventId = e.data.event;
+                var messageId = e.data.id;
+                var deferred = indexToDeferMap[messageId];
                 if (eventId === 'initDone') {
                     throw new Error('Received worker initialization in run method. This should already have occurred!');
                 } else if (eventId === 'success') {
                     deferred.resolve(e.data.data);
+                    delete indexToDeferMap[messageId];
                 } else if (eventId === 'failure') {
                     deferred.reject(e.data.data);
+                    delete indexToDeferMap[messageId];
                 } else if (eventId === 'update') {
                     deferred.notify(e.data.data);
                 } else {
                     deferred.reject(e);
                 }
             });
-            messageIndex++;
-            initializedWorker.postMessage(input);
-            return deferred.promise;
+            var index = messageIndex++;
+            indexToDeferMap[index] = $q.defer();
+            var param = {
+                id: index,
+                input: input,
+            };
+            initializedWorker.postMessage(param);
+            return indexToDeferMap[index].promise;
         };
 
         that.terminate = function () {
