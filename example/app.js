@@ -16,6 +16,8 @@ var app = angular
       //WorkerService.addDependency(serviceName, moduleName, url);
   });
 
+var workerPromise;
+
 app.controller("myChartCtrl", function($scope,WorkerService) {
 
 
@@ -40,24 +42,26 @@ app.controller("myChartCtrl", function($scope,WorkerService) {
       // But be aware that no state changes in the angular services in the worker are propagates to the main thread. Workers run in fully isolated contexts.
       // All communication must be performed through the output parameter.
    */
-  var workerPromise = WorkerService.createAngularWorker(['input', 'output', '$http', function (input, output, $http) {
+    if (!workerPromise) {
+      workerPromise = WorkerService.createAngularWorker(['input', 'output', '$http', function (input, output, $http) {
 
-    var i=0;
+        var i=0;
 
-    var callback = function(i) {
-      output.notify(i);
-      i++;
-    };
+        var callback = function(i) {
+          output.notify(i);
+          i++;
+        };
 
 
-    //for (var i = 0; i < 10; i++) { callback(i); }
-    //var intervalID = setInterval(callback(i), 3000);
-    setInterval(function(){ callback(++i); }, Math.floor((Math.random() * 1000) + 100));
+        //for (var i = 0; i < 10; i++) { callback(i); }
+        //var intervalID = setInterval(callback(i), 3000);
+        setInterval(function(){ callback(++i); }, Math.floor((Math.random() * 1000) + 100));
 
-    //output.resolve(true);
-    //output.reject(false);
+        //output.resolve(true);
+        //output.reject(false);
 
-  }]);
+      }]);
+    }
 
     workerPromise
       .then(function success(angularWorker) {
