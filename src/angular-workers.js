@@ -3,6 +3,7 @@ angular.module('FredrikSandell.worker-pool', [])
     var that = {};
     var urlToAngular;
     var serviceToUrlMap = {};
+    var messageIndex = 0;
     /*jshint laxcomma:true */
     /*jshint quotmark: false */
     var workerTemplate = [""
@@ -167,6 +168,7 @@ angular.module('FredrikSandell.worker-pool', [])
                     deferred.reject(e);
                 }
             });
+            messageIndex++;
             initializedWorker.postMessage(input);
             return deferred.promise;
         };
