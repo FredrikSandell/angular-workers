@@ -2,18 +2,18 @@
 
 > A wrapper for web workers in angular
 
-###Why?
+### Why?
 
 Using web workers is somewhat awkward in raw Javascript. Doing it in angular applications even more so. 
 Each web worker runs in it's own context, and this context is isolated from the angular application.
 
-###What does angular-workers do
+### What does angular-workers do
 angular-workers provides an angular service which upon request creates a web worker.
 The returned web worker runs it's own angular context which allows it to resolve angular dependencies.
 
 Mor information about how angular-worker work can be found in this [blog post](http://kindofcode.com/web-workers-in-angular/).
 
-##Installation
+## Installation
 
 install with bower using:
 
@@ -23,7 +23,7 @@ bower install angular-workers
 ```
 
 
-##How to use
+## How to use
 
 * Depend on the WorkerService.
 * Specify the URL to the file containing the angular script by invoking:  
@@ -82,13 +82,13 @@ bower install angular-workers
 
 The same initialized worker can be used many times with different input.
 
-##Requirements
+## Requirements
 
 The browser running the angular service needs to support the following:  
 * [Web Workers](http://caniuse.com/#feat=webworkers) (angular-workers does not use shared workers)  
 * [Blob URLs](http://caniuse.com/#feat=bloburls), specifically [creating blobs from strings](https://developer.mozilla.org/en-US/docs/Web/API/URL.createObjectURL#Browser_compatibility)
     
-##Limitations
+## Limitations
 
 The angular-workers is a wrapper around standard web workers. So all limitations with web workers apply.  
   * Data sent between the worker and main thread is deep cloned. (angular-workers does not use transferable objects, yet)
